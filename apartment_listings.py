@@ -24,6 +24,38 @@ def find_realtor_listings():
     listings = soup.find_all('div', class_= 'CardContent__StyledCardContent-rui__sc-7ptz1z-0 echMdB card-content')
     
     # Input each listing into a file
+    for listing in listings:
+        price = listing.find('div', class_= 'price-wrapper').text
+        location = (
+            f"{listing.find('div', attrs={'data-testid': 'card-address-1'}).text}"
+            ", "
+            f"{listing.find('div', attrs={'data-testid': 'card-address-2'}).text}"
+        )
+        
+        bed = listing.find('li', class_= 'styles__StyledPropertyBedMeta-rui__jbdr1y-0 gUHOjr').text
+        bath = listing.find('li', class_= 'styles__StyledPropertyBathMeta-rui__sc-6egb6z-0 dqxXcq').text
+
+        # Some listings don't have area size or pet info readily available
+        # Us try, except to handle missing attributes
+        try:
+            area = (
+                listing.find('li', class_= 'styles__StyledPropertySqftMeta-rui__sc-1f5nqhv-0 hZvqmo')
+                .find('span', class_='styles__StyledVisuallyHidden-rui__sc-1otsbow-0 kvJPgr').text
+            )
+        except AttributeError:
+            area = "Info N/A"
+        
+        try:
+            pets = (
+                listing.find('li', class_= 'styles__StyledPropertyPetMeta-rui__sc-1ebu08q-0 bWZehQ')
+                .find('span', class_= 'styles__StyledVisuallyHidden-rui__sc-1otsbow-0 kvJPgr').text
+            )
+        except AttributeError:
+            pets = "Info N/A"
+            
+        
+        info = [price, location, bed, bath, area, pets]
+        
 
 def find_redfin_listings():
     """Find 2 bedroom apartments on redfin.com"""
