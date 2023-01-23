@@ -20,7 +20,7 @@ with requests.Session() as se:
 def find_realtor_listings():
     """Find 2 bedroom apartments on realtor.com"""
     website = requests.get('https://www.realtor.com/apartments/07109/beds-2')
-    soup = BeautifulSoup(website, 'html.parser')
+    soup = BeautifulSoup(website.content, 'html.parser')
     listings = soup.find_all('div', class_= 'CardContent__StyledCardContent-rui__sc-7ptz1z-0 echMdB card-content')
     
     # Input each listing into a file
@@ -60,17 +60,72 @@ def find_realtor_listings():
 def find_redfin_listings():
     """Find 2 bedroom apartments on redfin.com"""
     website = requests.get('https://www.redfin.com/zipcode/07109/apartments-for-rent')
-    soup = BeautifulSoup(website, 'html.parser')
-    listings = soup.find_all('div', class_= 'bottomv2')
+    soup = BeautifulSoup(website.content, 'html.parser')
+    listings = soup.find_all('div', class_= 'MapHomeCardReact HomeCard')
     
     # Input each listing into a file
+    for listing in listings:
+        price = listing.find('span', class_= 'homecardV2Price').text
+        location = listing.find('div', class_= 'homeAddressV2').text
+        bed = listing.find('div', class_= 'HomeStatsV2 font-size-small').find_all('div', class_='stats')[0].text
+        bath = listing.find('div', class_= 'HomeStatsV2 font-size-small').find_all('div', class_='stats')[1].text
+        area = listing.find('div', class_= 'HomeStatsV2 font-size-small').find_all('div', class_='stats')[2].text
+        if area == "—Sq. Ft.":
+            area = "Info N/A"
+                
+        # Pet info is not readily available in Redfin, so '----' is just dummy text to trigger the try except
+        try:
+            pets = listing.find('div', class_= '----').text
+        except AttributeError:
+            pets = "Info N/A"
+
+        redfin_info = [price, location, bed, bath, area, pets]
 
 def find_zillow_listings():
     """Find 2 bedroom apartments on zillow.com"""
-    website = requests.get('https://www.zillow.com/homes/07109_rb/')
-    soup = BeautifulSoup(website, 'html.parser')
+    website = se.get('https://www.zillow.com/homes/07109_rb/')
+    soup = BeautifulSoup(website.content, 'html.parser')
     listings = soup.find_all('li', class_= 'ListItem-c11n-8-81-1__sc-10e22w8-0 srp__hpnp3q-0 enEXBq with_constellation')
     
     # Input each listing into a file
+    for listing in listings:
+        try:
+         price = listing.find('div', class_= 'StyledPropertyCardDataArea-c11n-8-81-1__sc-yipmu-0 wgiFT').text
+        except:
+            continue
 
+        location = listing.find('a', class_= 'StyledPropertyCardDataArea-c11n-8-81-1__sc-yipmu-0 lpqUkW property-card-link').text
+        bed = (
+            listing.find('ul', class_= 'StyledPropertyCardHomeDetailsList-c11n-8-81-1__sc-1xvdaej-0 cBiTXE')
+            .find_all('li')[0].text
+        )
+        
+        try:
+            bath = (
+                listing.find('ul', class_= 'StyledPropertyCardHomeDetailsList-c11n-8-81-1__sc-1xvdaej-0 cBiTXE')
+                .find_all('li')[1].text
+            )
+        except:
+            bath = "Info N/A"
+        if "bds" in bath:
+            bath = "Info N/A"
+        
+       
+        try:
+            area = (
+                listing.find('ul', class_= 'StyledPropertyCardHomeDetailsList-c11n-8-81-1__sc-1xvdaej-0 cBiTXE')
+                .find_all('li')[2].text
+            )
+        except:
+            area = "Info N/A"
+        if "--" in area:
+            area = "Info N/A"
+        
+        # Pet info is not readily available in Zillow, so '----' is just dummy text to trigger the try except
+        try:
+            pets = listing.find('div', class_= '----').text
+        except AttributeError:
+            pets = "Info N/A"
+
+        zillow_info = [price, location, bed, bath, area, pets]
 
