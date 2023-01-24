@@ -1,5 +1,4 @@
 # Apartment-Hunting-Using-Webscraping 
-
 This repository uses Python to webscrape a few popular property sites and then store them in Excel.
 Apartment locations are all in, or near, Belleville, New Jersey.
 
